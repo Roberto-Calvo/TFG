@@ -1,18 +1,12 @@
-# Estadistica descriptiva, normalidad
+# Estadistica descriptiva variable dependiente, Y
 
 #Librerias
 #Graficos 
 import matplotlib.pyplot as plt
-from matplotlib import style
-import matplotlib.ticker as ticker
 import seaborn as sns
-import statsmodels.api as sm
 
 #Procesado
-import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 #------------------------------------------
 def convert_to_seconds(delta):
     total_seconds = delta.total_seconds()

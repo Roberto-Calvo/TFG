@@ -1,26 +1,18 @@
-# Estadistica descriptiva, normalidad
+# Estadistica descriptiva de las variables discretas
 
 #Librerias
 #Graficos 
 import matplotlib.pyplot as plt
-from matplotlib import style
-import matplotlib.ticker as ticker
 import seaborn as sns
-import statsmodels.api as sm
 
 #Procesado
-import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 #------------------------------------------
 def convert_to_seconds(delta):
     total_seconds = delta.total_seconds()
     seconds = int(total_seconds)
     return seconds
 #------------------------------------------
-# MAIN
-
 # MAIN
 prueba = pd.read_excel('prueba.xlsx')
 prueba['tiempo'] = pd.to_timedelta(prueba['tiempo'])
@@ -50,68 +42,68 @@ variables_discretas = ['DockCode',  'Mes', 'DiaSemana', 'Gruas']
 # Gráfico para cada variable cualitativa
 # ==============================================================================
 # Ajustar número de subplots en función del número de columnas
-# fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(9, 5))
-# axes = axes.flat
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(9, 5))
+axes = axes.flat
 
-# for i, colum in enumerate(prueba[variables_discretas]):
-#     sns.countplot(
-#         data=prueba,
-#         x=colum,
-#         alpha=0.5,
-#         edgecolor = 'black',
-#         ax=axes[i]
-#     )
-#     axes[i].set_title(colum, fontsize=7, fontweight="bold")
-#     axes[i].set_ylabel("Nº de observaciones", fontsize=5)
-#     axes[i].tick_params(labelsize=6)
-#     axes[i].set_xlabel("")
+for i, colum in enumerate(prueba[variables_discretas]):
+    sns.countplot(
+        data=prueba,
+        x=colum,
+        alpha=0.5,
+        edgecolor = 'black',
+        ax=axes[i]
+    )
+    axes[i].set_title(colum, fontsize=7, fontweight="bold")
+    axes[i].set_ylabel("Nº de observaciones", fontsize=5)
+    axes[i].tick_params(labelsize=6)
+    axes[i].set_xlabel("")
     
-# fig.tight_layout()
-# plt.subplots_adjust(top=0.9)
-# fig.suptitle('Gráficos de Barras para Variables Discretas', fontsize=10, fontweight="bold")
-# plt.show()
-# print(prueba.shape)
+fig.tight_layout()
+plt.subplots_adjust(top=0.9)
+fig.suptitle('Gráficos de Barras para Variables Discretas', fontsize=10, fontweight="bold")
+plt.show()
+print(prueba.shape)
 
 # SEMANA_ANYO
-# fig, ax = plt.subplots(figsize = (18,5))
-# sns.countplot(
-#         data     = prueba,
-#         x        = prueba['Semana'],
-#         alpha    = 0.5,
-#         edgecolor = 'black',
-#         ax       = ax
-#     )
-# ax.set_xlabel('Semana')
-# ax.set_ylabel('Nº de observaciones')
-# ax.tick_params(labelsize = 6)
-# fig.suptitle('Gráfico de Barras Semana', fontsize = 10, fontweight = "bold")
-# plt.show()
+fig, ax = plt.subplots(figsize = (18,5))
+sns.countplot(
+        data     = prueba,
+        x        = prueba['Semana'],
+        alpha    = 0.5,
+        edgecolor = 'black',
+        ax       = ax
+    )
+ax.set_xlabel('Semana')
+ax.set_ylabel('Nº de observaciones')
+ax.tick_params(labelsize = 6)
+fig.suptitle('Gráfico de Barras Semana', fontsize = 10, fontweight = "bold")
+plt.show()
 
 # Nueva GRUAS
-# prueba['Gruas'] = prueba['Gruas'].astype('category')
+prueba['Gruas'] = prueba['Gruas'].astype('category')
 # Define una función para reagrupar las categorías
-# def reagrupar_categoria(categoria):
-#     if categoria <= 2:
-#         return categoria
-#     else:
-#         return ">2"
+def reagrupar_categoria(categoria):
+    if categoria <= 2:
+        return categoria
+    else:
+        return ">2"
 
 
-# prueba['Gruas_regrup'] = prueba['Gruas'].map(reagrupar_categoria)
-# print(prueba['Gruas_regrup'].describe())
-# fig, ax = plt.subplots(figsize = (4,4))
-# sns.countplot(
-#         data     = prueba,
-#         x        = prueba['Gruas_regrup'],
-#         alpha    = 0.5,
-#         edgecolor = 'black',
-#         ax       = ax
-#     )
-# ax.set_xlabel('Gruas')
-# ax.set_ylabel('Nº de observaciones')
-# ax.tick_params(labelsize = 6)
-# fig.suptitle('Gráfico de Barras Gruas', fontsize = 10, fontweight = "bold")
-# plt.show()
+prueba['Gruas_regrup'] = prueba['Gruas'].map(reagrupar_categoria)
+print(prueba['Gruas_regrup'].describe())
+fig, ax = plt.subplots(figsize = (4,4))
+sns.countplot(
+        data     = prueba,
+        x        = prueba['Gruas_regrup'],
+        alpha    = 0.5,
+        edgecolor = 'black',
+        ax       = ax
+    )
+ax.set_xlabel('Gruas')
+ax.set_ylabel('Nº de observaciones')
+ax.tick_params(labelsize = 6)
+fig.suptitle('Gráfico de Barras Gruas', fontsize = 10, fontweight = "bold")
+plt.show()
 
-# # Medidas descriptivas
-# print(prueba['DockCode'].describe())
+# Medidas descriptivas
+print(prueba['DockCode'].describe())

@@ -1,44 +1,27 @@
-# Estadistica descriptiva, normalidad
+# Aplicacion y optimizacion hiperparametros KNN
 
 #Librerias
 # ==============================================================================
-from sklearn.pipeline import Pipeline, FunctionTransformer
+from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV, RepeatedKFold, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, cross_val_score, RepeatedKFold, RandomizedSearchCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from xgb import XGBRegressor
+
 #Graficos 
 import matplotlib.pyplot as plt
 from matplotlib import style
-import matplotlib.ticker as ticker
-import seaborn as sns
-import statsmodels.api as sm
 
 #Procesado
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from gower import gower_matrix 
 
-# Configuración matplotlib
-# ==============================================================================
-plt.rcParams['image.cmap'] = "bwr"
-#plt.rcParams['figure.dpi'] = "100"
-plt.rcParams['savefig.bbox'] = "tight"
-style.use('ggplot') or plt.style.use('ggplot')
 #------------------------------------------
 def convert_to_seconds(delta):
     total_seconds = delta.total_seconds()
     seconds = int(total_seconds)
     return seconds
-
-def escalar_fechas(date_str):
-    # date = datetime.strptime(date_str,"%Y-%m-%d")
-    escala = int(date_str.strftime("%Y%m%d"))
-    return escala
 
 def rango_fechas(desde, hasta):
     return [desde + relativedelta(days=days) for days in range((hasta - desde).days + 1)]
@@ -121,95 +104,103 @@ preprocessor = ColumnTransformer(
                ).set_output(transform="pandas")
 
 #===============================
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics.pairwise import pairwise_distances
 
-def gower_distance(point1, point2, categorical_weight=1.0):
+def gower_distance1(point1, point2, categorical_weights=None):
     """
     Calcula la distancia de Gower entre dos puntos.
 
     Args:
-    - point1: numpy array, primer punto
-    - point2: numpy array, segundo punto
-    - categorical_weight: float, peso para las variables categóricas (0 <= categorical_weight <= 1)
+    - point1 (list, tuple, numpy array): Coordenadas del primer punto.
+    - point2 (list, tuple, numpy array): Coordenadas del segundo punto.
+    - categorical_weights (list, numpy array, optional): Pesos para atributos categóricos.
 
     Returns:
-    - distance: float, distancia de Gower entre los dos puntos
+    - distance (float): Distancia de Gower entre los dos puntos.
     """
-    n = len(point1)
-    sum_s = 0.0
-    sum_w = 0.0
-    
-    for i in range(n):
-        if isinstance(point1[i], int) and isinstance(point2[i], int):
-            # Si ambas variables son categóricas
-            if point1[i] == point2[i]:
-                sum_s += 0.0
-            else:
-                sum_s += 1.0
-            sum_w += categorical_weight
+
+    point1 = np.array(point1)
+    point2 = np.array(point2)
+
+    if categorical_weights is None:
+        categorical_weights = np.ones(len(point1))
+
+    # Identificar índices de atributos categóricos
+    categorical_indices = np.where(categorical_weights != 0)[0]
+
+    # Calcular distancia para cada atributo
+    distances = []
+    for i, (attr1, attr2, weight) in enumerate(zip(point1, point2, categorical_weights)):
+        if i in categorical_indices:
+            # Si es un atributo categórico, la distancia es 0 si son iguales, 1 si son diferentes
+            distance = 0 if attr1 == attr2 else 1
         else:
-            # Si al menos una de las variables es numérica
-            if point1[i] != point2[i]:
-                sum_s += np.abs(point1[i] - point2[i])
-            sum_w += 1.0
-    
-    distance = sum_s / sum_w
-    
+            # Si es un atributo numérico, calcular la distancia normalizada
+            range_attr = np.max(attr1) - np.min(attr1)
+            if range_attr == 0:
+                distance = 0 if attr1 == attr2 else 1
+            else:
+                distance = np.abs(attr1 - attr2) / range_attr
+        distances.append(distance * weight)
+
+    # Calcular la distancia promedio
+    distance = np.sum(distances) / np.sum(categorical_weights)
+
     return distance
 
-
 #===============================
-# Calcular la matriz de distancias
-distance_matrix_train = gower_matrix(X_train)
-distance_matrix_test = gower_matrix(X_test).T
 
 from sklearn.neighbors import KNeighborsRegressor 
 knn_pipeline = Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('model', KNeighborsRegressor(metric='braycurtis'))
+        ('model', KNeighborsRegressor(n_neighbors=27,metric=gower_distance1))
     ])
-# knn_pipeline.fit(X_train,y_train)
-# preds = knn_pipeline.predict(X_test)
-# print( mean_absolute_error(y_test, preds))
-# print( mean_squared_error(y_test, preds, squared=False))
-
-# Espacio de búsqueda de cada hiperparámetro
-param_distributions = {'model__n_neighbors': np.linspace(1, 100, 500, dtype=int)}
-
-# Búsqueda random grid
-grid = RandomizedSearchCV(
-        estimator  = knn_pipeline,
-        param_distributions = param_distributions,
-        n_iter     = 20,
-        scoring    = 'neg_root_mean_squared_error',
-        n_jobs     = -1,
-        cv         = RepeatedKFold(n_splits = 5, n_repeats = 3), 
-        refit      = True, 
-        verbose    = 0,
-        random_state = 123,
-        return_train_score = True
-       )
-
-grid.fit(X = X_train, y = y_train)
-
-# Resultados del grid
-# ==============================================================================
-resultados = pd.DataFrame(grid.cv_results_)
-print(resultados.filter(regex = '(param.*|mean_t|std_t)')\
-    .drop(columns = 'params')\
-    .sort_values('mean_test_score', ascending = False)\
-    .head(1)
-)
-# Error de test del modelo final
-# ==============================================================================
-modelo_final = grid.best_estimator_
-predicciones = modelo_final.predict(X = X_test)
+knn_pipeline.fit(X_train,y_train)
+predicciones = knn_pipeline.predict(X_test)
 rmse_knn = mean_squared_error(
             y_true  = y_test,
             y_pred  = predicciones,
             squared = False
-           )
+          )
 mae_knn = mean_absolute_error(y_test, predicciones)
-print(f"El error (rmse) de test es: {rmse_knn}")
-print(f"El error (mae) de test es: {mae_knn}")
+print(f"El error (rmse) de test es: {rmse_knn}, {rmse_knn/3600} y {rmse_knn/(3600*24)}")
+print(f"El error (mae) de test es: {mae_knn}, {mae_knn/3600} y {mae_knn/(3600*24)}")
+
+# # Espacio de búsqueda de cada hiperparámetro
+# param_distributions = {'model__n_neighbors': np.linspace(1, 100, 500, dtype=int)}
+
+# # Búsqueda random grid
+# grid = RandomizedSearchCV(
+#         estimator  = knn_pipeline,
+#         param_distributions = param_distributions,
+#         n_iter     = 20,
+#         scoring    = 'neg_root_mean_squared_error',
+#         n_jobs     = -1,
+#         cv         = RepeatedKFold(n_splits = 5, n_repeats = 3), 
+#         refit      = True, 
+#         verbose    = 0,
+#         random_state = 123,
+#         return_train_score = True
+#        )
+
+# grid.fit(X = X_train, y = y_train)
+
+# # Resultados del grid
+# # ==============================================================================
+# resultados = pd.DataFrame(grid.cv_results_)
+# print(resultados.filter(regex = '(param.*|mean_t|std_t)')\
+#     .drop(columns = 'params')\
+#     .sort_values('mean_test_score', ascending = False)\
+#     .head(1)
+# )
+# # Error de test del modelo final
+# # ==============================================================================
+# modelo_final = grid.best_estimator_
+# predicciones = modelo_final.predict(X = X_test)
+# rmse_knn = mean_squared_error(
+#             y_true  = y_test,
+#             y_pred  = predicciones,
+#             squared = False
+#            )
+# mae_knn = mean_absolute_error(y_test, predicciones)
+# print(f"El error (rmse) de test es: {rmse_knn}")
+# print(f"El error (mae) de test es: {mae_knn}")
