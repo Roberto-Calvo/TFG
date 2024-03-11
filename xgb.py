@@ -1,43 +1,21 @@
-# Estadistica descriptiva, normalidad
+# Aplicacion y optimizacion hiperparametros XGBOOST
 
 #Librerias
 # ==============================================================================
-from sklearn.pipeline import Pipeline, FunctionTransformer
+from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV, RepeatedKFold, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, RepeatedKFold, RandomizedSearchCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-#Graficos 
-import matplotlib.pyplot as plt
-from matplotlib import style
-import matplotlib.ticker as ticker
-import seaborn as sns
-import statsmodels.api as sm
-
 #Procesado
-import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from gower import gower_matrix 
 
-# Configuración matplotlib
-# ==============================================================================
-plt.rcParams['image.cmap'] = "bwr"
-#plt.rcParams['figure.dpi'] = "100"
-plt.rcParams['savefig.bbox'] = "tight"
-style.use('ggplot') or plt.style.use('ggplot')
 #------------------------------------------
 def convert_to_seconds(delta):
     total_seconds = delta.total_seconds()
     seconds = int(total_seconds)
     return seconds
-
-def escalar_fechas(date_str):
-    # date = datetime.strptime(date_str,"%Y-%m-%d")
-    escala = int(date_str.strftime("%Y%m%d"))
-    return escala
 
 def rango_fechas(desde, hasta):
     return [desde + relativedelta(days=days) for days in range((hasta - desde).days + 1)]
