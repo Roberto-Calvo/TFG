@@ -1,6 +1,9 @@
+#-------------------LIBRERÍAS------------------
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+
+#----------------------------------------------
 
 #-------------------FUNCIONES------------------
 
@@ -15,6 +18,8 @@ def convert_to_hours(delta):
     return f"{hours}:{minutes}:{seconds}"
 
 #----------------------------------------------
+
+#-------------------MAIN-----------------------
 
 # Seleccion de variables
 fechas_amura = [
@@ -32,13 +37,13 @@ variables_amura = [
 ]
 coordenadas_amura = ['Latitud_Amarre', 'Longitud_Amarre', 'Latitud_Amarre_2', 'Longitud_Amarre_2']
 
-# Lectura de GRUAS
+# Lectura de GRUAS en MDES - DataSet.xslx
 variables_gruas = ['code', 'DockCode']
 gruas = pd.read_excel('MDES - DataSet.xlsx', sheet_name='Grúas', na_values=['NULL',''])
 gruas.rename(columns={'Number':'code'}, inplace=True)
 gruas_filtrado = gruas[variables_gruas]
 
-# Lectura de MUELLES
+# Lectura de MUELLES en MDES - DataSet.xslx
 variables_muelles = ['DockCode', 'Muelle']
 muelles = pd.read_excel('MDES - DataSet.xlsx', sheet_name='Muelles', na_values=['NULL',''])
 muelles.rename(columns={'Name': 'Muelle'}, inplace=True)
