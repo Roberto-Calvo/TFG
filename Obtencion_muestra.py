@@ -1,4 +1,4 @@
-#-------------------LIBRERÍAS------------------
+#-------------------LIBRERÍAS-----------------
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta

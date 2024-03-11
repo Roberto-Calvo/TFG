@@ -1,7 +1,7 @@
 # Aplicacion y optimizacion hiperparametros KNN
 
 #Librerias
-# ==============================================================================
+# =============================================================================
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-#------------------------------------------
+#-----------------------------------------
 def convert_to_seconds(delta):
     total_seconds = delta.total_seconds()
     seconds = int(total_seconds)

@@ -12,7 +12,7 @@ def convert_to_seconds(delta):
     total_seconds = delta.total_seconds()
     seconds = int(total_seconds)
     return seconds
-#------------------------------------------
+#----------------------------------------
 # MAIN
 prueba = pd.read_excel('prueba.xlsx')
 prueba['tiempo'] = pd.to_timedelta(prueba['tiempo'])

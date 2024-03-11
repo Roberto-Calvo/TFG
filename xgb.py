@@ -19,7 +19,7 @@ def convert_to_seconds(delta):
 
 def rango_fechas(desde, hasta):
     return [desde + relativedelta(days=days) for days in range((hasta - desde).days + 1)]
-#------------------------------------------
+#-----------------------------------------
 # MAIN
 prueba = pd.read_excel('prueba.xlsx')
 prueba['tiempo'] = pd.to_timedelta(prueba['tiempo'])
